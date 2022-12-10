@@ -3,8 +3,8 @@ FROM python:3.8-slim
 LABEL maintainer="MarcLamberti"
 
 # Arguments that can be set with docker build
-ARG AIRFLOW_VERSION=1.10.12
-ARG AIRFLOW_HOME=/usr/local/airflow
+ARG AIRFLOW_VERSION=2.0.2
+ARG AIRFLOW_HOME=/opt/airflow
 
 # Export the environment variable AIRFLOW_HOME where airflow will be installed
 ENV AIRFLOW_HOME=${AIRFLOW_HOME}
@@ -34,14 +34,14 @@ RUN apt-get update -yqq && \
     locales \
     && apt-get clean
 
-COPY ./requirements-python3.8.txt /requirements-python3.8.txt
+COPY ./constraints-3.8.txt /constraints-3.8.txt
 
 # Upgrade pip
 # Create airflow user 
 # Install apache airflow with subpackages
 RUN pip install --upgrade pip && \
     useradd -ms /bin/bash -d ${AIRFLOW_HOME} airflow && \
-    pip install apache-airflow[crypto,celery,postgres,kubernetes,docker]==${AIRFLOW_VERSION} --constraint /requirements-python3.8.txt
+    pip install apache-airflow[postgres]==${AIRFLOW_VERSION} --constraint /constraints-3.8.txt
 
 # Copy the entrypoint.sh from host to container (at path AIRFLOW_HOME)
 COPY ./entrypoint.sh ./entrypoint.sh

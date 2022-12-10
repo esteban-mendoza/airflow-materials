@@ -46,17 +46,17 @@ source .sandbox/bin/activate
 * Activate the virtual environment sandbox
 
 
-wget https://raw.githubusercontent.com/apache/airflow/constraints-1.10.12/constraints-3.8.txt -O requirements-python3.8.txt
+wget https://raw.githubusercontent.com/apache/airflow/constraints-2.0.2/constraints-3.8.txt
 * Download the requirement file to install the right version of Airflow’s dependencies 
 
 
-pip install "apache-airflow[crypto,celery,postgres,kubernetes,docker]"==1.10.12 --constraint ./requirements-python3.8.txt
+pip install "apache-airflow[crypto,celery,postgres,cncf.kubernetes,docker]"==2.0.2 --constraint ./constraints-3.8.txt
 
 
-* Install the version 1.10.12 of apache-airflow with all subpackages defined between square brackets. (Notice that you can still add subpackages after all, you will use the same command with different subpackages even if Airflow is already installed)
+* Install the version 2.0.2 of apache-airflow with all subpackages defined between square brackets. (Notice that you can still add subpackages after all, you will use the same command with different subpackages even if Airflow is already installed)
 
 
-airflow initdb
+airflow db init
 * Initialise the metadatabase
 
 
@@ -88,15 +88,15 @@ pwd
 * Print the current path where you are
 
 
-airflow initdb
+airflow db init
 * Initialise the metadatabase
 
 
-airflow resetdb
+airflow db reset
 * Reinitialize the metadatabase (Drop everything)
 
 
-airflow upgradedb
+airflow db upgrade
 * Upgrade the metadatabase (Latest schemas, values, ...)
 
 
@@ -108,11 +108,11 @@ airflow scheduler
 * Start Airflow’s scheduler
 
 
-airflow worker
+airflow celery worker
 * Start a Celery worker (Useful in distributed mode to spread tasks among nodes - machines)
 
 
-airflow list_dags
+airflow dags list
 * Give the list of known dags (either those in the examples folder or in dags folder)
 
 
@@ -120,25 +120,25 @@ ls
 * Display the files/folders of the current directory 
 
 
-airflow trigger_dag example_python_operator
+airflow dags trigger example_python_operator
 * Trigger the dag example_python_operator with the current date as execution date
 
 
-airflow trigger_dag example_python_operator -e 2015-03-02
+airflow dags trigger example_python_operator -e 2021-01-01
 * Trigger the dag example_python_operator with a date in the past as execution date (This won’t trigger the tasks of that dag unless you set the option catchup=True in the DAG definition)
 
 
-airflow trigger_dag example_python_operator -e '2019-07-08 19:04:00+00:00'
+airflow dags trigger example_python_operator -e '2021-01-01 19:04:00+00:00'
 * Trigger the dag example_python_operator with a date in the future (change the date here with one having +2 minutes later than the current date displayed in the Airflow UI). The dag will be scheduled at that date.
 
 
-airflow list_dag_runs example_python_operator
+airflow dags list-runs -d example_python_operator
 * Display the history of example_python_operator’s dag runs
 
 
-airflow list_tasks example_python_operator
+airflow tasks list example_python_operator
 * List the tasks contained into the example_python_operator dag
 
 
-airflow test example_python_operator print_the_context 2018-05-07
+airflow tasks test example_python_operator print_the_context 2021-01-01
 * Allow to test a task (print_the_context) from a given dag (example_python_operator here) without taking care of dependencies and past runs. Useful for debugging.
