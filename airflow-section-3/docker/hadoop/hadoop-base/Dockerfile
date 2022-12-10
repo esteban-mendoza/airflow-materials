@@ -1,4 +1,4 @@
-FROM openjdk:8-jdk-slim
+FROM openjdk:8-jdk-slim-buster
 LABEL maintainer="MarcLamberti"
 
 ENV HADOOP_VERSION=3.1.1

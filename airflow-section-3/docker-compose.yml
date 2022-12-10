@@ -8,6 +8,11 @@ services:
     build: './docker/postgres'
     restart: always
     container_name: postgres
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "5"
+          max-size: "10m"
     ports:
       - "32769:5432"
     #volumes:
@@ -27,6 +32,11 @@ services:
     image: wodby/adminer:latest
     restart: always
     container_name: adminer
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "5"
+          max-size: "10m"
     ports:
       - "32767:9000"
     environment:
@@ -46,6 +56,11 @@ services:
     build: ./docker/hadoop/hadoop-namenode
     restart: always
     container_name: namenode
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "5"
+          max-size: "10m"
     ports:
       - "32763:9870"
     volumes:
@@ -62,6 +77,11 @@ services:
     build: ./docker/hadoop/hadoop-datanode
     restart: always
     container_name: datanode
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "5"
+          max-size: "10m"
     depends_on:
       - namenode
     volumes:
@@ -74,63 +94,15 @@ services:
       interval: 10s
       retries: 10
 
-  # The services below are only useful if you want
-  # to use YARN with HADOOP. Since we are going to use
-  # only the HDFS, we can skip them.
-
-  #resourcemanager:
-  #  build: ./docker/hadoop/hadoop-resourcemanager
-  #  restart: always
-  #  container_name: resourcemanager
-  #  depends_on:
-  #    - namenode
-  #    - datanode
-  #  environment:
-  #    - SERVICE_PRECONDITION=namenode:9870 datanode:9864
-  #  healthcheck:
-  #    test: [ "CMD", "nc", "-z", "resourcemanager", "8088" ]
-  #    timeout: 45s
-  #    interval: 10s
-  #    retries: 10
-
-  #nodemanager:
-  #  build: ./docker/hadoop/hadoop-nodemanager
-  #  restart: always
-  #  container_name: nodemanager
-  #  depends_on:
-  #    - namenode
-  #    - datanode
-  #    - resourcemanager
-  #  environment:
-  #    - SERVICE_PRECONDITION=namenode:9870 datanode:9864 resourcemanager:8088
-  #  healthcheck:
-  #    test: [ "CMD", "nc", "-z", "nodemanager", "8042" ]
-  #    timeout: 45s
-  #    interval: 10s
-  #    retries: 10
-
-  #historyserver:
-  #  build: ./docker/hadoop/hadoop-historyserver
-  #  restart: always
-  #  container_name: historyserver
-  #  volumes:
-  #    - ./mnt/hadoop/historyserver:/hadoop/yarn/timeline
-  #  depends_on:
-  #    - namenode
-  #    - datanode
-  #    - resourcemanager
-  #  environment:
-  #    - SERVICE_PRECONDITION=namenode:9870 datanode:9864 resourcemanager:8088
-  #  healthcheck:
-  #    test: [ "CMD", "nc", "-z", "historyserver", "8188" ]
-  #    timeout: 45s
-  #    interval: 10s
-  #    retries: 10
-
   hive-metastore:
     build: ./docker/hive/hive-metastore
     restart: always
     container_name: hive-metastore
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "5"
+          max-size: "10m"
     depends_on:
       - namenode
       - datanode
@@ -149,6 +121,11 @@ services:
     build: ./docker/hive/hive-server
     restart: always
     container_name: hive-server
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "5"
+          max-size: "10m"
     depends_on:
       - hive-metastore
     environment:
@@ -166,6 +143,11 @@ services:
     build: ./docker/hive/hive-webhcat
     restart: always
     container_name: hive-webhcat
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "5"
+          max-size: "10m"
     depends_on:
       - hive-server
     environment:
@@ -180,6 +162,11 @@ services:
     build: ./docker/hue
     restart: always
     container_name: hue
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "5"
+          max-size: "10m"
     depends_on:
       - hive-server
       - postgres
@@ -202,6 +189,11 @@ services:
     build: ./docker/spark/spark-master
     restart: always
     container_name: spark-master
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "5"
+          max-size: "10m"
     ports:
       - "32766:8082"
       - "32765:7077"
@@ -216,6 +208,11 @@ services:
 
   spark-worker:
     build: ./docker/spark/spark-worker
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "5"
+          max-size: "10m"
     depends_on:
       - spark-master
     ports:
@@ -233,6 +230,11 @@ services:
     build: ./docker/livy
     restart: always
     container_name: livy
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "5"
+          max-size: "10m"
     depends_on:
       - spark-worker
     ports:
@@ -256,8 +258,8 @@ services:
     restart: always
     container_name: airflow
     volumes:
-      - ./mnt/airflow/airflow.cfg:/usr/local/airflow/airflow.cfg
-      - ./mnt/airflow/dags:/usr/local/airflow/dags
+      - ./mnt/airflow/airflow.cfg:/opt/airflow/airflow.cfg
+      - ./mnt/airflow/dags:/opt/airflow/dags
     ports:
       - 8080:8080
     healthcheck:

@@ -44,8 +44,13 @@ def download_rates():
 def _get_message() -> str:
     return "Hi from forex_data_pipeline"
 
-with DAG("forex_data_pipeline", start_date=datetime(2021, 1 ,1), 
-    schedule_interval="@daily", default_args=default_args, catchup=False) as dag:
+with DAG(
+    "forex_data_pipeline",
+    start_date=datetime(2021, 1 ,1), 
+    schedule_interval="@daily",
+    default_args=default_args,
+    catchup=False
+) as dag:
 
     is_forex_rates_available = HttpSensor(
         task_id="is_forex_rates_available",
