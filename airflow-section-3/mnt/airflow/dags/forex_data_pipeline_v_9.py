@@ -1,28 +1,26 @@
 from airflow import DAG
-from airflow.sensors.http_sensor import HttpSensor
+from airflow.providers.http.sensors.http import HttpSensor
 from airflow.sensors.filesystem import FileSensor
-from airflow.operators.python_operator import PythonOperator
-from airflow.operators.bash_operator import BashOperator
+from airflow.operators.python import PythonOperator
+from airflow.operators.bash import BashOperator
 from airflow.providers.apache.hive.operators.hive import HiveOperator
+from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
+from airflow.providers.slack.operators.slack_webhook import SlackWebhookOperator
 
 from datetime import datetime, timedelta
-
 import csv
 import requests
 import json
 
 default_args = {
-            "owner": "airflow",
-            "start_date": datetime(2019, 1, 1),
-            "email_on_failure": False,
-            "email_on_retry": False,
-            "email": "youremail@host.com",
-            "retries": 1,
-            "retry_delay": timedelta(minutes=5)
-        }
+    "owner": "airflow",
+    "email_on_failure": False,
+    "email_on_retry": False,
+    "email": "admin@localhost.com",
+    "retries": 1,
+    "retry_delay": timedelta(minutes=5)
+}
 
-# Download forex rates according to the currencies we want to watch
-# described in the file forex_currencies.csv
 def download_rates():
     BASE_URL = "https://gist.githubusercontent.com/marclamberti/f45f872dea4dfd3eaa015a4a1af4b39b/raw/"
     ENDPOINTS = {
@@ -42,13 +40,16 @@ def download_rates():
                 json.dump(outdata, outfile)
                 outfile.write('\n')
 
-with DAG(dag_id="forex_data_pipeline_v_6", schedule_interval="@daily", default_args=default_args, catchup=False) as dag:
-    
+def _get_message() -> str:
+    return "Hi from forex_data_pipeline"
+
+with DAG("forex_data_pipeline", start_date=datetime(2022, 1 ,1), 
+    schedule_interval="@daily", default_args=default_args, catchup=False) as dag:
+
     is_forex_rates_available = HttpSensor(
         task_id="is_forex_rates_available",
-        method="GET",
         http_conn_id="forex_api",
-        endpoint="latest",
+        endpoint="marclamberti/f45f872dea4dfd3eaa015a4a1af4b39b",
         response_check=lambda response: "rates" in response.text,
         poke_interval=5,
         timeout=20
@@ -63,8 +64,8 @@ with DAG(dag_id="forex_data_pipeline_v_6", schedule_interval="@daily", default_a
     )
 
     downloading_rates = PythonOperator(
-            task_id="downloading_rates",
-            python_callable=download_rates
+        task_id="downloading_rates",
+        python_callable=download_rates
     )
 
     saving_rates = BashOperator(
@@ -72,7 +73,7 @@ with DAG(dag_id="forex_data_pipeline_v_6", schedule_interval="@daily", default_a
         bash_command="""
             hdfs dfs -mkdir -p /forex && \
             hdfs dfs -put -f $AIRFLOW_HOME/dags/files/forex_rates.json /forex
-            """
+        """
     )
 
     creating_forex_rates_table = HiveOperator(
@@ -95,3 +96,20 @@ with DAG(dag_id="forex_data_pipeline_v_6", schedule_interval="@daily", default_a
         """
     )
 
+    forex_processing = SparkSubmitOperator(
+        task_id="forex_processing",
+        application="/opt/airflow/dags/scripts/forex_processing.py",
+        conn_id="spark_conn",
+        verbose=False
+    )
+
+    send_slack_notification = SlackWebhookOperator(
+        task_id="send_slack_notification",
+        http_conn_id="slack_conn",
+        message=_get_message(),
+        channel="#monitoring"
+    )
+    
+    is_forex_rates_available >> is_forex_currencies_file_available >> downloading_rates >> saving_rates 
+    saving_rates >> creating_forex_rates_table >> forex_processing
+    forex_processing >> send_slack_notification

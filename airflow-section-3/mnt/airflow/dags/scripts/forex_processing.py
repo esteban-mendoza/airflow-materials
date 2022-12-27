@@ -1,7 +1,6 @@
 from os.path import expanduser, join, abspath
 
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import from_json
 
 warehouse_location = abspath('spark-warehouse')
 
