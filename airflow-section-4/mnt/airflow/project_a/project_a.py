@@ -11,7 +11,7 @@ default_args = {
     'retry_delay': timedelta(seconds=60),
 }
 
-with DAG(dag_id='backfill', schedule_interval="0 0 * * *", default_args=default_args, catchup=False) as dag:
+with DAG(dag_id='project_a', schedule_interval="0 0 * * *", default_args=default_args, catchup=False) as dag:
     
     # Task 1
     bash_task_1 = BashOperator(task_id='bash_task_1', bash_command="echo 'first task'")

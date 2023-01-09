@@ -48,7 +48,8 @@ class TestTstDagDefinition:
         """
             Verify that the start_date is < current date and catchup = False
         """
-        True
+        assert dag.default_args['start_date'] < pendulum.now(), "The start_date of the DAG is in the future"
+        assert dag.catchup == False, "The catchup parameter should be set to False"
 
     def test_same_start_date_all_tasks(self, dag):
         """

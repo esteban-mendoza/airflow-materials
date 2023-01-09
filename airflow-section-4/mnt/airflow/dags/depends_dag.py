@@ -7,7 +7,10 @@ from datetime import datetime, timedelta
 
 default_args = {
     'start_date': datetime(2019, 1, 1),
-    'owner': 'Airflow'
+    'owner': 'Airflow',
+    'email': 'owner@test.com',
+    'retries': 3,
+    'retry_delay': timedelta(seconds=60),
 }
 
 def second_task():
@@ -24,9 +27,9 @@ with DAG(dag_id='depends_task', schedule_interval="0 0 * * *", default_args=defa
     bash_task_1 = BashOperator(task_id='bash_task_1', bash_command="echo 'first task'")
     
     # Task 2
-    python_task_2 = PythonOperator(task_id='python_task_2', python_callable=second_task)
+    python_task_2 = PythonOperator(task_id='python_task_2', python_callable=second_task, depends_on_past=True)
 
     # Task 3
-    python_task_3 = PythonOperator(task_id='python_task_3', python_callable=third_task)
+    python_task_3 = PythonOperator(task_id='python_task_3', python_callable=third_task, wait_for_downstream=True)
 
     bash_task_1 >> python_task_2 >> python_task_3

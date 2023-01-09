@@ -5,10 +5,13 @@ from datetime import datetime, timedelta
 
 default_args = {
     'start_date': datetime(2019, 3, 29, 1),
-    'owner': 'Airflow'
+    'owner': 'Airflow',
+    'email': 'owner@test.com',
+    'retries': 3,
+    'retry_delay': timedelta(seconds=60),
 }
 
-with DAG(dag_id='start_and_schedule_dag', schedule_interval="0 * * * *", default_args=default_args) as dag:
+with DAG(dag_id='start_and_schedule_dag', schedule_interval=timedelta(hours=1), default_args=default_args) as dag:
     
     # Task 1
     dummy_task_1 = DummyOperator(task_id='dummy_task_1')
