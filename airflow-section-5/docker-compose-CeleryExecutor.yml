@@ -62,7 +62,7 @@ services:
             - webserver
         volumes:
             - ./mnt/airflow/dags:/usr/local/airflow/dags
-            - ./mnt/airflow/airflow.cfg:/usr/local/airflow/airflow.cfg            
+            - ./mnt/airflow/airflow.cfg:/usr/local/airflow/airflow.cfg
         # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         environment:
